@@ -374,3 +374,17 @@ input[type=number]{ width: 100%; }
 #btnReciboPDF{
   width: 100%;
 }
+
+
+/* Reglas: mismo tamaño y compacto */
+.rules .boxText{
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.rules .boxText div{
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0 0 4px 0;
+}
