@@ -33,3 +33,9 @@ Sistema simple para llevar el control de nómina quincenal de **La Bonita**.
 
 ---
 Hecho para La Bonita ✨
+
+
+## Nota sobre bono (tu regla)
+- Tolerancia: 10 minutos.
+- Si llega tarde (más de 5 min) o no cumple mínimo 4 horas, pierde el bono si llega tarde más de 3 veces en la quincena.
+- En la app, el bono se marca manual por quincena para cada chica (Lupita siempre sí).

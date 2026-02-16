@@ -12,6 +12,8 @@ const CONFIG = {
 
 const LS_RECORDS = "lb_nomina_records_v1";
 const LS_BONOS = "lb_nomina_bonos_v1";
+const LS_BONOS_AMT = "lb_nomina_bonos_amt_v1";
+const LS_PLAYERA_PLAN = "lb_nomina_playera_plan_v1";
 
 function $(id){ return document.getElementById(id); }
 
@@ -94,6 +96,39 @@ function saveBonos(bonos){
   localStorage.setItem(LS_BONOS, JSON.stringify(bonos));
 }
 
+function loadBonosAmt(){
+  const base = { Lupita:50, Paulina:50, Angelica:50, Lisa:50 };
+  try{ return {...base, ...(JSON.parse(localStorage.getItem(LS_BONOS_AMT) || "{}"))}; }
+  catch{ return base; }
+}
+
+function saveBonosAmt(bonosAmt){
+  localStorage.setItem(LS_BONOS_AMT, JSON.stringify(bonosAmt));
+}
+
+function loadPlayeraPlan(){
+  const base = {};
+  EMPLEADAS.forEach(n=>{
+    base[n] = { costoTotal: 0, mitadEmpleado: 0, saldoEmpleado: 0 };
+  });
+  try{
+    const saved = JSON.parse(localStorage.getItem(LS_PLAYERA_PLAN) || "{}");
+    const out = { ...base };
+    Object.keys(out).forEach(n=>{
+      if(saved[n]){
+        out[n] = { ...out[n], ...saved[n] };
+      }
+    });
+    return out;
+  }catch{
+    return base;
+  }
+}
+
+function savePlayeraPlan(plan){
+  localStorage.setItem(LS_PLAYERA_PLAN, JSON.stringify(plan));
+}
+
 function computeRecord(r){
   const inMin = minutesFromHHMM(r.entrada);
   const outMin = minutesFromHHMM(r.salida);
@@ -112,7 +147,19 @@ function computeRecord(r){
   return { workedMin, horas, pagoHoras, pagoVideo, descPlayera, totalDia };
 }
 
-function buildBonosUI(bonos){
+function buildReciboSelect(){
+  const sel = $("reciboEmpleado");
+  if(!sel) return;
+  sel.innerHTML = "";
+  EMPLEADAS.forEach(n=>{
+    const opt = document.createElement("option");
+    opt.value = n;
+    opt.textContent = n;
+    sel.appendChild(opt);
+  });
+}
+
+function buildBonosUI(bonos, bonosAmt){
   const wrap = $("bonosUI");
   wrap.innerHTML = "";
 
@@ -124,9 +171,10 @@ function buildBonosUI(bonos){
     left.className = "name";
     left.textContent = name;
 
-    const right = document.createElement("label");
+    const right = document.createElement("div");
     right.className = "toggle";
 
+    // Switch Sí/No
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = name === "Lupita" ? true : !!bonos[name];
@@ -141,11 +189,48 @@ function buildBonosUI(bonos){
       render();
     });
 
+    // Amount
+    const amt = document.createElement("input");
+    amt.type = "number";
+    amt.min = "0";
+    amt.step = "1";
+    amt.value = String(bonosAmt[name] ?? 50);
+    amt.style.width = "92px";
+    amt.style.height = "34px";
+    amt.style.borderRadius = "12px";
+    amt.style.border = "1px solid rgba(90,59,46,.14)";
+    amt.style.padding = "0 10px";
+    amt.style.fontWeight = "900";
+    amt.title = "Monto del bono para esta quincena";
+
+    amt.addEventListener("input", ()=>{
+      const v = Number(amt.value || 0);
+      bonosAmt[name] = v;
+      saveBonosAmt(bonosAmt);
+      render();
+    });
+
+    const peso = document.createElement("span");
+    peso.textContent = "$";
+    peso.style.fontWeight = "900";
+    peso.style.color = "#5A3B2E";
+
     right.appendChild(cb);
     right.appendChild(txt);
 
+    // Lupita: bono siempre, pero monto editable
+    const amtWrap = document.createElement("div");
+    amtWrap.style.display = "flex";
+    amtWrap.style.alignItems = "center";
+    amtWrap.style.gap = "6px";
+    amtWrap.style.marginLeft = "10px";
+    amtWrap.appendChild(peso);
+    amtWrap.appendChild(amt);
+
     row.appendChild(left);
     row.appendChild(right);
+    row.appendChild(amtWrap);
+
     wrap.appendChild(row);
   });
 }
@@ -182,6 +267,27 @@ function renderRegistro(records){
     const tdAction = document.createElement("td");
     tdAction.className = "num";
 
+    const btnEdit = document.createElement("button");
+    btnEdit.className = "iconBtn";
+    btnEdit.textContent = "Editar";
+    btnEdit.style.marginRight = "8px";
+    btnEdit.addEventListener("click", ()=>{
+      // Cargar datos al formulario para editar
+      window.__LB_EDIT_ID__ = r.id;
+      $("fecha").value = r.fecha;
+      $("empleada").value = r.empleada;
+      $("entrada").value = r.entrada;
+      $("salida").value = r.salida;
+      $("videos").value = Number(r.videos || 0);
+      $("playeraAplicar").checked = !!r.playeraAplicar;
+      $("playeraCosto").value = Number(r.playeraCosto || 0);
+      $("notas").value = r.notas || "";
+      previewFromForm();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      $("btnAdd").textContent = "Guardar cambios";
+      $("btnAdd").classList.add("btnWarn");
+    });
+
     const btn = document.createElement("button");
     btn.className = "iconBtn iconBtnDanger";
     btn.textContent = "Eliminar";
@@ -193,6 +299,7 @@ function renderRegistro(records){
       render();
     });
 
+    tdAction.appendChild(btnEdit);
     tdAction.appendChild(btn);
     tr.appendChild(tdAction);
 
@@ -200,7 +307,7 @@ function renderRegistro(records){
   });
 }
 
-function renderNomina(records, bonos){
+function renderNomina(records, bonos, bonosAmt){
   const mesVal = $("mes").value; // YYYY-MM
   const mode = $("quincena").value;
 
@@ -249,7 +356,8 @@ function renderNomina(records, bonos){
     const playeras = rows.reduce((acc, r)=> acc + (r.playera?1:0), 0);
     const descPlayera = playeras * CONFIG.descuentoPlayera;
 
-    const bono = (name === "Lupita") ? CONFIG.bonoPuntualidadQuincena : (bonos[name] ? CONFIG.bonoPuntualidadQuincena : 0);
+    const amt = Number((bonosAmt && bonosAmt[name] != null) ? bonosAmt[name] : CONFIG.bonoPuntualidadQuincena);
+    const bono = (name === "Lupita") ? amt : (bonos[name] ? amt : 0);
 
     const total = (pagoHoras + pagoLunes) + pagoVideos + bono - descPlayera;
 
@@ -303,8 +411,10 @@ function exportRegistroCSV(records){
         r.salida,
         c.horas.toFixed(2),
         c.pagoHoras.toFixed(2),
-        r.video ? "SI" : "NO",
-        r.playera ? "SI" : "NO",
+        String(Number(r.videos || 0)),
+        (r.playeraAplicar ? "SI" : "NO"),
+        String(Number(r.playeraCosto || 0)),
+        r.tarde ? "SI" : "NO",
         r.notas || "",
       ]);
     });
@@ -312,7 +422,7 @@ function exportRegistroCSV(records){
   downloadCSV(`registro_la_bonita_${toISODate(new Date())}.csv`, rows);
 }
 
-function exportNominaCSV(records, bonos){
+function exportNominaCSV(records, bonos, bonosAmt, playeraPlan){
   const mesVal = $("mes").value;
   const mode = $("quincena").value;
   if(!mesVal){
@@ -348,7 +458,8 @@ function exportNominaCSV(records, bonos){
     const pagoVideos = videos * CONFIG.pagoPorVideo;
     const playeras = rowsEmp.reduce((acc, r)=> acc + (r.playera?1:0), 0);
     const descPlayera = playeras * CONFIG.descuentoPlayera;
-    const bono = (name === "Lupita") ? CONFIG.bonoPuntualidadQuincena : (bonos[name] ? CONFIG.bonoPuntualidadQuincena : 0);
+    const amt = Number((bonosAmt && bonosAmt[name] != null) ? bonosAmt[name] : CONFIG.bonoPuntualidadQuincena);
+    const bono = (name === "Lupita") ? amt : (bonos[name] ? amt : 0);
     const total = (pagoHoras + pagoLunes) + pagoVideos + bono - descPlayera;
 
     rows.push([
@@ -391,8 +502,9 @@ function previewFromForm(){
     empleada: $("empleada").value,
     entrada: $("entrada").value,
     salida: $("salida").value,
-    video: $("video").checked,
-    playera: $("playera").checked,
+    videos: Number($("videos").value || 0),
+    playeraAplicar: $("playeraAplicar").checked,
+      playeraCosto: Number($("playeraCosto").value || 0),
     notas: $("notas").value.trim(),
   };
 
@@ -428,14 +540,18 @@ function init(){
   });
 
   $("btnAdd").addEventListener("click", ()=>{
+    const editingId = window.__LB_EDIT_ID__ || null;
+
     const record = {
-      id: crypto.randomUUID(),
+      id: editingId ? editingId : crypto.randomUUID(),
       fecha: $("fecha").value,
       empleada: $("empleada").value,
       entrada: $("entrada").value,
       salida: $("salida").value,
-      video: $("video").checked,
-      playera: $("playera").checked,
+      videos: Number($("videos").value || 0),
+      playeraAplicar: $("playeraAplicar").checked,
+      playeraCosto: Number($("playeraCosto").value || 0),
+      tarde: isLateByEntrada($("entrada").value),
       notas: $("notas").value.trim(),
     };
 
@@ -455,13 +571,28 @@ function init(){
     }
 
     const records = loadRecords();
-    records.push(record);
+
+    if(editingId){
+      const idx = records.findIndex(x=> x.id === editingId);
+      if(idx >= 0){
+        records[idx] = record;
+      }else{
+        records.push(record);
+      }
+      window.__LB_EDIT_ID__ = null;
+      $("btnAdd").textContent = "Guardar registro";
+      $("btnAdd").classList.remove("btnWarn");
+    }else{
+      records.push(record);
+    }
+
     saveRecords(records);
 
     // reset parcial
-    $("video").checked = false;
-    $("playera").checked = false;
-    $("notas").value = "";
+    $("videos").value = 0;
+    $("playeraAplicar").checked = false;
+    $("playeraCosto").value = 0;
+        $("notas").value = "";
 
     render();
   });
@@ -473,8 +604,24 @@ function init(){
     exportRegistroCSV(loadRecords());
   });
 
+  // Recibo PDF por empleada
+  const btnPdf = $("btnReciboPDF");
+  if(btnPdf){
+    btnPdf.addEventListener("click", ()=>{
+      const emp = $("reciboEmpleado").value;
+      const bonos = loadBonos();
+      const bonosAmt = loadBonosAmt();
+      const playeraPlan = loadPlayeraPlan();
+      const records = loadRecords();
+      const range = getSelectedRange();
+      const data = computeNominaForEmployee(emp, records, bonos, bonosAmt, playeraPlan, range);
+      downloadReciboPDF(emp, data, range);
+    });
+  }
+
+
   $("btnExportNomina").addEventListener("click", ()=>{
-    exportNominaCSV(loadRecords(), loadBonos());
+    exportNominaCSV(loadRecords(), loadBonos(), loadBonosAmt(), loadPlayeraPlan());
   });
 
   $("btnReset").addEventListener("click", ()=>{
@@ -482,6 +629,9 @@ function init(){
     if(!ok) return;
     localStorage.removeItem(LS_RECORDS);
     localStorage.removeItem(LS_BONOS);
+    window.__LB_EDIT_ID__ = null;
+    $("btnAdd").textContent = "Guardar registro";
+    $("btnAdd").classList.remove("btnWarn");
     render();
   });
 
@@ -492,14 +642,17 @@ function init(){
 function render(){
   const records = loadRecords();
   const bonos = loadBonos();
+  const bonosAmt = loadBonosAmt();
 
   // Lupita siempre sí
   bonos.Lupita = true;
   saveBonos(bonos);
+  // Bonos monto: si no existe, se inicializa
+  saveBonosAmt(bonosAmt);
 
-  buildBonosUI(bonos);
+  buildBonosUI(bonos, bonosAmt);
   renderRegistro(records);
-  renderNomina(records, bonos);
+  renderNomina(records, bonos, bonosAmt);
   previewFromForm();
 }
 

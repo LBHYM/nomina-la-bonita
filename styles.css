@@ -340,3 +340,37 @@ input:focus, select:focus{
   align-items:center;
 }
 .toggle input{transform: scale(1.15)}
+
+
+.btnWarn{
+  background: linear-gradient(135deg, var(--caramel), var(--blush)) !important;
+  box-shadow: 0 10px 20px rgba(215,123,134,.20) !important;
+}
+
+
+.note{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(77,170,150,.10);
+  border: 1px solid rgba(77,170,150,.22);
+  color: var(--brown);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+
+.hint{
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(90,59,46,.72);
+}
+
+input[type=number]{ width: 100%; }
+
+
+/* PDF button row */
+#btnReciboPDF{
+  width: 100%;
+}

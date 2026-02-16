@@ -58,15 +58,26 @@
           </div>
 
           <div class="row">
-            <label class="check">
-              <input type="checkbox" id="video" />
-              <span>Publicó video (+$20)</span>
-            </label>
+            <div class="field">
+              <label>Videos publicados</label>
+              <input type="number" id="videos" min="0" step="1" value="0" />
+              <div class="hint">Cada video vale $20</div>
+            </div>
+
+            <div class="field">
+              <label>Playera (costo total)</label>
+              <input type="number" id="playeraCosto" min="0" step="1" value="0" placeholder="Ej: 250" />
+              <div class="hint">La mitad la paga el empleado. Se descuenta en pagos de $25 por quincena.</div>
+            </div>
 
             <label class="check">
-              <input type="checkbox" id="playera" />
-              <span>Descuento playera (-$25) · opcional</span>
+              <input type="checkbox" id="playeraAplicar" />
+              <span>Aplicar descuento de playera en esta quincena (-$25)</span>
             </label>
+
+            <div class="note">
+              La tardanza se calcula sola con la hora de entrada (después de 4:10 pm).
+            </div>
           </div>
 
           <div class="row">
@@ -114,8 +125,19 @@
                 <div>• $40 por hora</div>
                 <div>• Lunes pagado: 4 horas (automático)</div>
                 <div>• Extra por cuartos: 0–14 min no cuenta</div>
-                <div>• Bono puntualidad: $50 por quincena</div>
-                <div>• Playera: se descuenta solo cuando tú lo marques</div>
+                <div>• Hora base de entrada: 4:00 pm</div>
+                <div>• Tolerancia: 10 min (tarde si entra después de 4:10 pm)</div>
+                <div>• Pierde bono si llega tarde más de 3 veces en la quincena</div>
+                <div>• Bono puntualidad: variable por quincena</div>
+                <div>• Playera: plan (costo total / mitad empleado) y descuento de $25 por quincena</div>
+              </div>
+                <div>• Lunes pagado: 4 horas (automático)</div>
+                <div>• Extra por cuartos: 0–14 min no cuenta</div>
+                <div>• Tolerancia: 10 min</div>
+                <div>• Pierde bono si llega tarde más de 3 veces en la quincena</div>
+                <div>• Bono puntualidad: variable por quincena</div>
+                <div>• Playera: plan (costo total / mitad empleado) y descuento de $25 por quincena</div>
+              </div>
               </div>
             </div>
 
@@ -131,6 +153,18 @@
           <div class="row">
             <div class="range" id="rangeText"></div>
           </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Recibo para empleada</label>
+              <select id="reciboEmpleado"></select>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button id="btnReciboPDF" class="btn btnPrimary">Descargar recibo (PDF)</button>
+            </div>
+          </div>
+
         </div>
 
         <div class="tableWrap">
@@ -144,6 +178,7 @@
                 <th class="num">Videos</th>
                 <th class="num">Pago videos</th>
                 <th class="num">Playera</th>
+                <th class="num">Saldo playera</th>
                 <th class="num">Bono</th>
                 <th class="num">TOTAL</th>
               </tr>
@@ -187,6 +222,7 @@
               <th class="num">Pago</th>
               <th class="num">Video</th>
               <th class="num">Playera</th>
+              <th class="num">Tarde</th>
               <th>Notas</th>
               <th class="num">Acción</th>
             </tr>
@@ -206,6 +242,33 @@
     </footer>
   </main>
 
+  
+<script>
+  // Seed inicial (Febrero 2026 · 1-15) — generado por ChatGPT
+  (function(){
+    const key = "lb_nomina_records_v1";
+    try {
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      if(Array.isArray(existing) && existing.length > 0) return;
+      const seed = [{"id": "b802a313-c345-44df-b481-ff2168f3d4c0", "fecha": "2026-02-01", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "a95aa474-48d7-48c0-b747-a1702710501b", "fecha": "2026-02-01", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "978d6f3a-e590-4194-83be-3acbc03b5eb6", "fecha": "2026-02-02", "empleada": "Lupita", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "3b7e2613-9771-4a7f-8fec-9cf00efaa34b", "fecha": "2026-02-02", "empleada": "Paulina", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "5e788276-f0b7-4702-95a8-2ac9831b5a1a", "fecha": "2026-02-02", "empleada": "Angelica", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "5157a855-76f3-4173-9b2a-95cb92de356a", "fecha": "2026-02-02", "empleada": "Lisa", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "7ca506c3-68da-47f4-a186-e6bdcbd27e19", "fecha": "2026-02-03", "empleada": "Lupita", "entrada": "16:00", "salida": "23:00", "video": false, "playera": false, "notas": ""}, {"id": "d65c069c-4e3b-4bba-b56e-b9e5312d5669", "fecha": "2026-02-03", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "d0dbf74b-7715-47ff-a2c2-29e683417a52", "fecha": "2026-02-03", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "d95f9d7b-86b9-4e2a-94a8-1a30db678bd0", "fecha": "2026-02-03", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "767b2b62-d4f3-46d2-b2a5-1ba43ff7dc67", "fecha": "2026-02-04", "empleada": "Lupita", "entrada": "16:00", "salida": "22:00", "video": false, "playera": false, "notas": ""}, {"id": "56be941b-75cb-4a19-b5dd-03a07dc3bba1", "fecha": "2026-02-04", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "1f501a56-2d0f-43f9-9290-a371675bab1c", "fecha": "2026-02-04", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "c1314c50-1af6-4420-90a3-1c9100f31508", "fecha": "2026-02-04", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "b70f1779-f572-4423-a3b2-a30c1380b04c", "fecha": "2026-02-05", "empleada": "Lupita", "entrada": "16:00", "salida": "22:00", "video": false, "playera": false, "notas": ""}, {"id": "b9a53f81-0f71-4a1c-bd27-db8d507ce252", "fecha": "2026-02-05", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "cc03c8bc-7b7a-4034-894c-7f2f6025e342", "fecha": "2026-02-05", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "b92b9459-0dda-4a2b-afec-9a3b5ed19e19", "fecha": "2026-02-05", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "39aa4904-11e0-4749-a97c-067d30c9c5e1", "fecha": "2026-02-06", "empleada": "Lupita", "entrada": "16:00", "salida": "22:15", "video": false, "playera": false, "notas": ""}, {"id": "c5541384-62d3-4f05-b9c8-8acff6f775bf", "fecha": "2026-02-06", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "ba8f591e-0c8b-44f8-9416-95983d5ffdb1", "fecha": "2026-02-06", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "c73cc903-6190-4b8f-a23b-fa21ba118057", "fecha": "2026-02-06", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "2cf4bc53-e27c-4c46-be36-49613824b1c1", "fecha": "2026-02-07", "empleada": "Lupita", "entrada": "16:00", "salida": "20:30", "video": false, "playera": false, "notas": ""}, {"id": "36dbfc2f-3770-41fc-b4ba-38852d1033e5", "fecha": "2026-02-07", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "1f1cfe00-dd43-422e-8bcd-e2bf9f423af5", "fecha": "2026-02-07", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "412e87eb-675d-4be4-ba45-9be8ed981555", "fecha": "2026-02-07", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "cfb6150f-9928-46fb-8841-d0446902b5cc", "fecha": "2026-02-08", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "952dbbb3-43a4-49ab-9edd-acb048008b60", "fecha": "2026-02-08", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "d05c7e3a-414c-4b15-8693-c732818a5e12", "fecha": "2026-02-08", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "1cfa0024-49d7-4240-ae7e-145a5a2ecf64", "fecha": "2026-02-09", "empleada": "Lupita", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "bc78cacf-1b69-4299-8261-9f14b4022e5b", "fecha": "2026-02-09", "empleada": "Paulina", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "ba82d6be-996f-46c6-9a8b-fdaf840a777d", "fecha": "2026-02-09", "empleada": "Angelica", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "cac13bd0-d196-4b0f-b945-92e77879da94", "fecha": "2026-02-09", "empleada": "Lisa", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "fa23db4b-c10f-4114-b4f1-cbd824a811a3", "fecha": "2026-02-10", "empleada": "Lupita", "entrada": "16:00", "salida": "22:30", "video": false, "playera": false, "notas": ""}, {"id": "647181ae-0704-4f40-b01f-bd30de7de023", "fecha": "2026-02-10", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "4025a72f-1ab4-4e66-a236-6293520f10a2", "fecha": "2026-02-10", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "d70d0b42-27c8-416b-811c-02289517b0ce", "fecha": "2026-02-10", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "a51376cf-ec96-4dc3-b005-2d132d645844", "fecha": "2026-02-11", "empleada": "Lupita", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "3ef90357-5bce-4577-8394-3fe9417aa60c", "fecha": "2026-02-11", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "b1724ecf-d682-45a4-89f2-cb8b46863c40", "fecha": "2026-02-11", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "873fcd5e-9d70-41dd-8006-5cabc15f20ea", "fecha": "2026-02-11", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "dcb33e1c-dfdf-413e-b020-39fe31b48b02", "fecha": "2026-02-12", "empleada": "Lupita", "entrada": "16:00", "salida": "21:45", "video": false, "playera": false, "notas": ""}, {"id": "53a1820d-8bf1-4e95-aadc-3dd07a9d80c5", "fecha": "2026-02-12", "empleada": "Paulina", "entrada": "16:00", "salida": "21:30", "video": false, "playera": false, "notas": ""}, {"id": "c080f0eb-a083-49e6-aba2-6ee58329893d", "fecha": "2026-02-12", "empleada": "Angelica", "entrada": "16:00", "salida": "21:30", "video": false, "playera": false, "notas": ""}, {"id": "82ef55b6-efef-4233-bd3a-9e4103391a7f", "fecha": "2026-02-12", "empleada": "Lisa", "entrada": "16:00", "salida": "21:30", "video": false, "playera": false, "notas": ""}, {"id": "7ce8c7d8-b327-4cef-8b94-d168b0ef7ac2", "fecha": "2026-02-13", "empleada": "Lupita", "entrada": "16:00", "salida": "21:45", "video": false, "playera": false, "notas": ""}, {"id": "0e7c3a54-0d44-49a9-abfe-82305d1c741f", "fecha": "2026-02-13", "empleada": "Paulina", "entrada": "16:00", "salida": "21:30", "video": false, "playera": false, "notas": ""}, {"id": "931a74e1-cb7f-485a-9194-8634ff899696", "fecha": "2026-02-13", "empleada": "Angelica", "entrada": "16:00", "salida": "21:30", "video": false, "playera": false, "notas": ""}, {"id": "21bdae3c-9c77-43c6-9fcb-b05107802302", "fecha": "2026-02-13", "empleada": "Lisa", "entrada": "16:00", "salida": "21:30", "video": false, "playera": false, "notas": ""}, {"id": "a0989f72-9048-40a9-be4f-4ceacf8dd9dd", "fecha": "2026-02-14", "empleada": "Lupita", "entrada": "16:00", "salida": "22:30", "video": false, "playera": false, "notas": ""}, {"id": "16f4d2f0-4f20-461f-bf1b-3d5437aed24c", "fecha": "2026-02-14", "empleada": "Paulina", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "48747c6e-4f9c-47f2-a01f-25cbbe8c3a3d", "fecha": "2026-02-14", "empleada": "Angelica", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "2b4f0bbe-494b-48b9-a219-2a8bf452dcfd", "fecha": "2026-02-14", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}, {"id": "550bd2a9-a1e2-419e-91d0-9ed2e41eae3a", "fecha": "2026-02-15", "empleada": "Lupita", "entrada": "16:00", "salida": "20:30", "video": false, "playera": false, "notas": ""}, {"id": "c2d619ac-36d8-48dc-82b3-853382c25212", "fecha": "2026-02-15", "empleada": "Paulina", "entrada": "16:00", "salida": "20:00", "video": false, "playera": false, "notas": ""}, {"id": "0b08082e-0387-4d29-9e21-bcd419819b05", "fecha": "2026-02-15", "empleada": "Angelica", "entrada": "16:00", "salida": "19:00", "video": false, "playera": false, "notas": ""}, {"id": "58622f04-0233-4697-9584-a15efec8086f", "fecha": "2026-02-15", "empleada": "Lisa", "entrada": "16:00", "salida": "21:00", "video": false, "playera": false, "notas": ""}];
+      localStorage.setItem(key, JSON.stringify(seed));
+    } catch(e) {}
+  })();
+</script>
+
+
+<script>
+  (function(){
+    const key = "lb_nomina_bonos_v1";
+    try {
+      const existing = JSON.parse(localStorage.getItem(key) || "null");
+      if(existing && typeof existing === "object") return;
+      localStorage.setItem(key, JSON.stringify({"Lupita": true, "Paulina": false, "Angelica": false, "Lisa": false}));
+    } catch(e) {}
+  })();
+</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
