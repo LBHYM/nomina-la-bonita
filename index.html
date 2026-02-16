@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nómina | La Bonita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="./logo.png" alt="La Bonita" class="logo" />
+      <div class="brandText">
+        <div class="brandName">La Bonita</div>
+        <div class="brandSub">Helados y más… · Nómina</div>
+      </div>
+    </div>
+
+    <div class="topActions">
+      <button id="btnExportNomina" class="btn btnGhost">Exportar nómina (CSV)</button>
+      <button id="btnExportRegistro" class="btn btnGhost">Exportar registro (CSV)</button>
+      <button id="btnReset" class="btn btnDanger">Borrar todo</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid">
+      <div class="card">
+        <div class="cardHead">
+          <h2>Registro diario</h2>
+          <span class="pill">Rápido · 1 minuto</span>
+        </div>
+
+        <div class="form">
+          <div class="row">
+            <div class="field">
+              <label>Fecha</label>
+              <input type="date" id="fecha" />
+            </div>
+            <div class="field">
+              <label>Empleada</label>
+              <select id="empleada"></select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Hora entrada</label>
+              <input type="time" id="entrada" />
+            </div>
+            <div class="field">
+              <label>Hora salida</label>
+              <input type="time" id="salida" />
+            </div>
+          </div>
+
+          <div class="row">
+            <label class="check">
+              <input type="checkbox" id="video" />
+              <span>Publicó video (+$20)</span>
+            </label>
+
+            <label class="check">
+              <input type="checkbox" id="playera" />
+              <span>Descuento playera (-$25) · opcional</span>
+            </label>
+          </div>
+
+          <div class="row">
+            <div class="field" style="width:100%">
+              <label>Notas (opcional)</label>
+              <input type="text" id="notas" placeholder="Ej: entró antes por inventario, se quedó por cierre, etc." />
+            </div>
+          </div>
+
+          <div class="row actions">
+            <button id="btnAdd" class="btn btnPrimary">Guardar registro</button>
+            <div class="mini">
+              <div id="preview" class="preview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHead">
+          <h2>Nómina quincenal</h2>
+          <span class="pill">Automática</span>
+        </div>
+
+        <div class="form">
+          <div class="row">
+            <div class="field">
+              <label>Mes</label>
+              <input type="month" id="mes" />
+            </div>
+
+            <div class="field">
+              <label>Quincena</label>
+              <select id="quincena">
+                <option value="1-15">1 al 15</option>
+                <option value="16-fin">16 al fin</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="box">
+              <div class="boxTitle">Reglas</div>
+              <div class="boxText">
+                <div>• $40 por hora</div>
+                <div>• Lunes pagado: 4 horas (automático)</div>
+                <div>• Extra por cuartos: 0–14 min no cuenta</div>
+                <div>• Bono puntualidad: $50 por quincena</div>
+                <div>• Playera: se descuenta solo cuando tú lo marques</div>
+              </div>
+            </div>
+
+            <div class="box">
+              <div class="boxTitle">Bono puntualidad (quincena)</div>
+              <div class="boxText">
+                <div class="small">Lupita siempre sí (automático).</div>
+                <div id="bonosUI" class="bonosUI"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="range" id="rangeText"></div>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table class="table" id="tablaNomina">
+            <thead>
+              <tr>
+                <th>Empleada</th>
+                <th class="num">Horas</th>
+                <th class="num">Lunes</th>
+                <th class="num">Pago horas</th>
+                <th class="num">Videos</th>
+                <th class="num">Pago videos</th>
+                <th class="num">Playera</th>
+                <th class="num">Bono</th>
+                <th class="num">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody id="nominaBody"></tbody>
+          </table>
+        </div>
+
+        <div class="totals">
+          <div class="totalCard">
+            <div class="k">Total nómina</div>
+            <div class="v" id="totalNomina">$0.00</div>
+          </div>
+          <div class="totalCard">
+            <div class="k">Total videos</div>
+            <div class="v" id="totalVideos">$0.00</div>
+          </div>
+          <div class="totalCard">
+            <div class="k">Descuento playeras</div>
+            <div class="v" id="totalPlayeras">$0.00</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="cardHead">
+        <h2>Historial (registros guardados)</h2>
+        <span class="pill">Se guarda en tu navegador</span>
+      </div>
+
+      <div class="tableWrap">
+        <table class="table" id="tablaRegistro">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Empleada</th>
+              <th class="num">Entrada</th>
+              <th class="num">Salida</th>
+              <th class="num">Horas</th>
+              <th class="num">Pago</th>
+              <th class="num">Video</th>
+              <th class="num">Playera</th>
+              <th>Notas</th>
+              <th class="num">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="registroBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>
+        Hecho para <strong>La Bonita</strong> · Nómina simple y clara ✨
+      </div>
+      <div class="muted">
+        Tip: Los datos se guardan en esta compu/cel. Si cambias de navegador, no se pasan.
+      </div>
+    </footer>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
