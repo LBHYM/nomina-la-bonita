@@ -1,0 +1,1853 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nómina • La Bonita</title>
+  <link rel="icon" href="./logo.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#FBF7F4;
+      --card:#FFFFFF;
+      --text:#1F2937;
+      --muted:#6B7280;
+      --brand:#5A3B2E;
+      --brand2:#D31B2B;
+      --line:rgba(31,41,55,.10);
+      --shadow: 0 10px 30px rgba(31,41,55,.08);
+      --radius: 18px;
+      --radius2: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font);
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(211,27,43,.08), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(90,59,46,.10), transparent 55%),
+        var(--bg);
+      color: var(--text);
+    }
+    .container{ max-width:1180px; margin:0 auto; padding:20px 16px 50px; }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
+      padding:14px 16px; border:1px solid var(--line); border-radius:var(--radius);
+      background:rgba(255,255,255,.70); backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+    .brand{ display:flex; align-items:center; gap:12px; min-width:280px; }
+    .brand img{ width:44px; height:44px; border-radius:14px; background:#fff; border:1px solid var(--line); padding:6px; }
+    .brandTitle{ display:flex; flex-direction:column; line-height:1.1; }
+    .brandTitle strong{ font-size:16px; letter-spacing:.2px; }
+    .brandTitle span{ font-size:12px; color:var(--muted); font-weight:800; }
+    .pills{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+    .pill{
+      display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:999px;
+      border:1px solid var(--line); background:#fff; font-size:12px; font-weight:900;
+      color: rgba(31,41,55,.86);
+    }
+    .dot{ width:10px; height:10px; border-radius:999px; background:var(--brand2); }
+    .dot.cafe{ background:var(--brand); }
+
+    .grid{ margin-top:16px; display:grid; grid-template-columns:1.05fr .95fr; gap:14px; }
+    @media (max-width:980px){ .grid{ grid-template-columns:1fr; } }
+
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; }
+    .cardHeader{ padding:14px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .cardHeader h2{ margin:0; font-size:14px; letter-spacing:.2px; }
+    .cardHeader .sub{ font-size:12px; color:var(--muted); font-weight:800; }
+    .cardBody{ padding:16px; }
+
+    .row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+    @media (max-width:560px){ .row{ grid-template-columns:1fr; } }
+
+    .field label{ display:block; font-size:12px; color:rgba(31,41,55,.80); font-weight:900; margin-bottom:6px; }
+    .field input, .field select, textarea{
+      width:100%; padding:12px 12px; border-radius:14px;
+      border:1px solid rgba(31,41,55,.16); outline:none; background:#fff;
+      font-size:13px; font-weight:800; color:var(--text);
+    }
+    textarea{ min-height:88px; resize:vertical; }
+    .field input:focus, .field select:focus, textarea:focus{
+      border-color: rgba(211,27,43,.45);
+      box-shadow: 0 0 0 4px rgba(211,27,43,.10);
+    }
+    .hint{ margin-top:6px; font-size:12px; color:var(--muted); font-weight:800; }
+
+    .check{
+      display:flex; align-items:center; gap:10px; padding:12px 12px; border-radius:14px;
+      border:1px solid var(--line); background: rgba(251,247,244,.65);
+      font-weight:900; font-size:13px;
+    }
+    .check input{ width:18px; height:18px; }
+
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .btn{
+      border:1px solid var(--line); background:#fff; color:rgba(31,41,55,.92);
+      padding:12px 14px; border-radius:14px; font-weight:900; font-size:13px;
+      cursor:pointer; transition: transform .05s ease, box-shadow .2s ease;
+    }
+    .btn:hover{ box-shadow: 0 10px 20px rgba(31,41,55,.10); }
+    .btn:active{ transform: translateY(1px); }
+    .btnPrimary{ background: linear-gradient(135deg, var(--brand2), #B31322); color:#fff; border-color: rgba(0,0,0,0); }
+    .btnGhost{ background: rgba(90,59,46,.06); border-color: rgba(90,59,46,.18); }
+    .btnDanger{ background: rgba(211,27,43,.08); border-color: rgba(211,27,43,.25); color:#7A0E17; }
+
+    .note{
+      font-size:12px; font-weight:900; color:rgba(31,41,55,.78);
+      padding:10px 12px; border-radius:14px;
+      border:1px dashed rgba(31,41,55,.18);
+      background: rgba(255,255,255,.65);
+    }
+
+    .tableWrap{ width:100%; overflow:auto; border:1px solid var(--line); border-radius:var(--radius2); }
+    table{ width:100%; border-collapse:collapse; min-width: 980px; background:#fff; }
+    th,td{ padding:12px 12px; border-bottom:1px solid rgba(31,41,55,.08); font-size:13px; font-weight:800; white-space:nowrap; }
+    th{ text-align:left; font-size:12px; color:rgba(31,41,55,.70); background: rgba(251,247,244,.75); }
+    td.num, th.num{ text-align:right; }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px;
+      border:1px solid var(--line); background: rgba(255,255,255,.70);
+      font-size:12px; font-weight:900;
+    }
+    .badge.ok{ border-color: rgba(15,118,110,.22); background: rgba(15,118,110,.08); color:#0F766E; }
+    .badge.warn{ border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.10); color:#92400E; }
+    .badge.bad{ border-color: rgba(211,27,43,.25); background: rgba(211,27,43,.08); color:#7A0E17; }
+
+    .rulesList{ margin:0; padding-left:18px; }
+    .rulesList li{ margin:6px 0; color: rgba(31,41,55,.82); font-weight:800; font-size:11px; line-height:1.4; }
+
+    .footer{ margin-top:18px; font-size:12px; color:var(--muted); font-weight:900; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <img src="./logo.png" alt="La Bonita" />
+        <div class="brandTitle">
+          <strong>Nómina La Bonita</strong>
+          <span>Quincenal • $40/h • Lunes pagado 4 hrs</span>
+        </div>
+      </div>
+      <div class="pills">
+        <div class="pill"><span class="dot"></span> Guardado automático</div>
+        <div class="pill"><span class="dot cafe"></span> Google Sheets (gratis)</div>
+        <div class="pill"><span class="dot"></span> PDF por empleada</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="cardHeader">
+          <h2>Registrar día</h2>
+          <div class="sub">Se calcula todo automático</div>
+        </div>
+        <div class="cardBody">
+
+          <div class="row">
+            <div class="field">
+              <label>Fecha</label>
+              <input id="fecha" type="date" />
+            </div>
+            <div class="field">
+              <label>Empleada</label>
+              <select id="empleada">
+                <option value="Lupita">Lupita</option>
+                <option value="Paulina">Paulina</option>
+                <option value="Angelica">Angelica</option>
+                <option value="Lisa">Lisa</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Hora programada</label>
+              <select id="horaProg">
+                <option value="14:00">14:00</option>
+                <option value="14:30">14:30</option>
+                <option value="15:00">15:00</option>
+                <option value="15:30">15:30</option>
+                <option value="16:00" selected>16:00</option>
+                <option value="16:30">16:30</option>
+              </select>
+              <div class="hint">Siempre :00 o :30. (Lupita normalmente 14:00)</div>
+            </div>
+            <div class="field">
+              <label>Entrada real</label>
+              <input id="entrada" type="time" step="60" />
+              <div class="hint">Tarde si entra +10 min después de la programada.</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Salida</label>
+              <input id="salida" type="time" step="60" />
+            </div>
+            <div class="field">
+              <label>Videos publicados (cada uno $20)</label>
+              <input id="videos" type="number" min="0" value="0" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Playera (opcional)</label>
+              <div class="check">
+                <input id="playeraAplicar" type="checkbox" />
+                <span>Aplicar descuento de $25 esta quincena</span>
+              </div>
+              <div class="hint">La mitad del empleado se calcula desde “Plan de playera”.</div>
+            </div>
+            <div class="field">
+              <label>Notas (opcional)</label>
+              <input id="notas" type="text" placeholder="Ej: se quedó a las 9, apoyo en limpieza, etc." />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="btnAdd" class="btn btnPrimary">Guardar día</button>
+            <button id="btnClearForm" class="btn btnGhost">Limpiar</button>
+          </div>
+
+          <div class="note" id="calcPreview" style="margin-top:12px;">
+            Calculando…
+          </div>
+
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="cardHeader">
+            <h2>Respaldo (Google Sheets)</h2>
+            <div class="sub">Sin subir / bajar</div>
+          </div>
+          <div class="cardBody">
+            <div class="field">
+              <label>URL del Web App (Apps Script)</label>
+              <input id="apiUrl" type="text" placeholder="Pega aquí tu URL…" />
+              <div class="hint">Solo la pegas una vez por dispositivo.</div>
+            </div>
+            <div class="field">
+              <label>Clave (opcional)</label>
+              <input id="apiKey" type="text" placeholder="Si usas clave, pégala aquí" />
+            </div>
+
+            <div class="note" id="syncStatus">Conecta tu Sheet y se guardará automático.</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <div class="cardHeader">
+            <h2>Bonos (quincena)</h2>
+            <div class="sub">2 tipos</div>
+          </div>
+          <div class="cardBody">
+            <div class="note" style="margin-bottom:12px;">
+              <b>1) Bono puntualidad y asistencia</b> (se busca dar siempre).<br/>
+              Solo se pierde si: <b>más de 3 tardanzas</b> en la quincena o si faltó.
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label>Puntualidad/Asistencia Lupita</label>
+                <input id="bonoPA_Lupita" type="number" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label>Puntualidad/Asistencia Paulina</label>
+                <input id="bonoPA_Paulina" type="number" min="0" value="0" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label>Puntualidad/Asistencia Angelica</label>
+                <input id="bonoPA_Angelica" type="number" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label>Puntualidad/Asistencia Lisa</label>
+                <input id="bonoPA_Lisa" type="number" min="0" value="0" />
+              </div>
+            </div>
+
+            <div class="note" style="margin:14px 0 12px;">
+              <b>2) Bono extra quincenal</b> (opcional) — puede ser 0 si no aplica.
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label>Extra Lupita</label>
+                <input id="bonoEX_Lupita" type="number" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label>Extra Paulina</label>
+                <input id="bonoEX_Paulina" type="number" min="0" value="0" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label>Extra Angelica</label>
+                <input id="bonoEX_Angelica" type="number" min="0" value="0" />
+              </div>
+              <div class="field">
+                <label>Extra Lisa</label>
+                <input id="bonoEX_Lisa" type="number" min="0" value="0" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="btnSaveBonos" class="btn">Guardar bonos</button>
+            </div>
+          </div>
+        </div>
+<div class="card" style="margin-top:14px;">
+          <div class="cardHeader">
+            <h2>Plan de playera</h2>
+            <div class="sub">Saldo visible</div>
+          </div>
+          <div class="cardBody">
+            <div class="field">
+              <label>Costo total de playera (si aplica)</label>
+              <input id="playeraCostoTotal" type="number" min="0" value="0" />
+              <div class="hint">Ej: 250. La mitad del empleado = 125.</div>
+            </div>
+            <div class="field">
+              <label>Empleada</label>
+              <select id="playeraEmpleada">
+                <option value="Lupita">Lupita</option>
+                <option value="Paulina">Paulina</option>
+                <option value="Angelica">Angelica</option>
+                <option value="Lisa">Lisa</option>
+              </select>
+            </div>
+            <div class="actions">
+              <button id="btnSetPlayera" class="btn">Aplicar plan</button>
+            </div>
+            <div class="note" id="playeraStatus">Aquí se mostrará el saldo.</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <div class="cardHeader">
+            <h2>Reglas (resumen)</h2>
+            <div class="sub">Tu política oficial</div>
+          </div>
+          <div class="cardBody">
+            <ul class="rulesList">
+              <li><b>$40 por hora</b></li>
+              <li><b>Lunes pagado:</b> 4 horas (automático)</li>
+              <li><b>Hora programada:</b> siempre :00 o :30</li>
+              <li><b>Tolerancia:</b> 10 min</li>
+              <li><b>Extra:</b> 0–14 min no cuenta. 15=0.25, 30=0.50, 45=0.75</li>
+              <li><b>Bono:</b> opcional, monto variable por persona</li>
+              <li><b>Se pierde bono:</b> si llega tarde <b>más de 3 veces</b> en la quincena</li>
+              <li><b>Videos:</b> $20 c/u</li>
+              <li><b>Playera:</b> descuento $25 por quincena hasta pagar la mitad del empleado</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <div class="cardHeader">
+        <h2>Registros de la quincena</h2>
+        <div class="sub" id="qInfo">—</div>
+      </div>
+      <div class="cardBody">
+        <div class="actions" style="margin-bottom:12px;">
+          <button id="btnPdf" class="btn btnPrimary">PDF por empleada</button>
+          <button id="btnExportCSV" class="btn">Exportar CSV</button>
+          <button id="btnResetAll" class="btn btnDanger">Borrar TODO</button>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label>Mes</label>
+            <select id="mes">
+              <option value="1">Enero</option>
+              <option value="2" selected>Febrero</option>
+              <option value="3">Marzo</option>
+              <option value="4">Abril</option>
+              <option value="5">Mayo</option>
+              <option value="6">Junio</option>
+              <option value="7">Julio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Septiembre</option>
+              <option value="10">Octubre</option>
+              <option value="11">Noviembre</option>
+              <option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Quincena</label>
+            <select id="quincena">
+              <option value="1" selected>1 al 15</option>
+              <option value="2">16 al fin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Empleada</th>
+                <th>Prog</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th class="num">Horas</th>
+                <th>Tarde</th>
+                <th class="num">Videos</th>
+                <th>Playera</th>
+                <th class="num">Pago</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="note" id="summary" style="margin-top:12px;">—</div>
+      </div>
+    </div>
+
+    <div class="footer">La Bonita • Nómina quincenal • Hecho para uso interno</div>
+  </div>
+
+<script>
+/** =========================================================
+ *  NÓMINA LA BONITA (CERO)
+ *  - GitHub Pages (frontend)
+ *  - Google Sheets (base de datos) vía Apps Script
+ *  - Guardado automático (sin botones)
+ * ========================================================= */
+
+const EMPLEADAS = ["Lupita","Paulina","Angelica","Lisa"];
+
+const LS_API_URL = "lb_api_url_v2";
+const LS_API_KEY = "lb_api_key_v2";
+const LS_RECORDS = "lb_records_v5";
+const LS_BONOS = "lb_bonos_v5";
+const LS_PLAYERA = "lb_playera_v5";
+
+const DEFAULT_RECORDS = [
+  {
+    "id": "Lupita-2026-02-01",
+    "fecha": "2026-02-01",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 0.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=0.0)"
+  },
+  {
+    "id": "Lupita-2026-02-02",
+    "fecha": "2026-02-02",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Lupita-2026-02-03",
+    "fecha": "2026-02-03",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 6.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=6.0)"
+  },
+  {
+    "id": "Lupita-2026-02-04",
+    "fecha": "2026-02-04",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 6.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=6.0)"
+  },
+  {
+    "id": "Lupita-2026-02-05",
+    "fecha": "2026-02-05",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 7.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=7.5)"
+  },
+  {
+    "id": "Lupita-2026-02-06",
+    "fecha": "2026-02-06",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 7.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=7.5)"
+  },
+  {
+    "id": "Lupita-2026-02-07",
+    "fecha": "2026-02-07",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 9.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=9.0)"
+  },
+  {
+    "id": "Lupita-2026-02-08",
+    "fecha": "2026-02-08",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 0.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=0.0)"
+  },
+  {
+    "id": "Lupita-2026-02-09",
+    "fecha": "2026-02-09",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Lupita-2026-02-10",
+    "fecha": "2026-02-10",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 6.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=6.5)"
+  },
+  {
+    "id": "Lupita-2026-02-11",
+    "fecha": "2026-02-11",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lupita-2026-02-12",
+    "fecha": "2026-02-12",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.75,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.75)"
+  },
+  {
+    "id": "Lupita-2026-02-13",
+    "fecha": "2026-02-13",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.75,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.75)"
+  },
+  {
+    "id": "Lupita-2026-02-14",
+    "fecha": "2026-02-14",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 6.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=6.5)"
+  },
+  {
+    "id": "Lupita-2026-02-15",
+    "fecha": "2026-02-15",
+    "empleada": "Lupita",
+    "horaProg": "14:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.5)"
+  },
+  {
+    "id": "Paulina-2026-02-01",
+    "fecha": "2026-02-01",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-02",
+    "fecha": "2026-02-02",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Paulina-2026-02-03",
+    "fecha": "2026-02-03",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-04",
+    "fecha": "2026-02-04",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-05",
+    "fecha": "2026-02-05",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-06",
+    "fecha": "2026-02-06",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-07",
+    "fecha": "2026-02-07",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-08",
+    "fecha": "2026-02-08",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-09",
+    "fecha": "2026-02-09",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Paulina-2026-02-10",
+    "fecha": "2026-02-10",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-11",
+    "fecha": "2026-02-11",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-12",
+    "fecha": "2026-02-12",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.5)"
+  },
+  {
+    "id": "Paulina-2026-02-13",
+    "fecha": "2026-02-13",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.5)"
+  },
+  {
+    "id": "Paulina-2026-02-14",
+    "fecha": "2026-02-14",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Paulina-2026-02-15",
+    "fecha": "2026-02-15",
+    "empleada": "Paulina",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Angelica-2026-02-01",
+    "fecha": "2026-02-01",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-02",
+    "fecha": "2026-02-02",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Angelica-2026-02-03",
+    "fecha": "2026-02-03",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-04",
+    "fecha": "2026-02-04",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-05",
+    "fecha": "2026-02-05",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-06",
+    "fecha": "2026-02-06",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-07",
+    "fecha": "2026-02-07",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-08",
+    "fecha": "2026-02-08",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-09",
+    "fecha": "2026-02-09",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Angelica-2026-02-10",
+    "fecha": "2026-02-10",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-11",
+    "fecha": "2026-02-11",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-12",
+    "fecha": "2026-02-12",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.5)"
+  },
+  {
+    "id": "Angelica-2026-02-13",
+    "fecha": "2026-02-13",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.5)"
+  },
+  {
+    "id": "Angelica-2026-02-14",
+    "fecha": "2026-02-14",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Angelica-2026-02-15",
+    "fecha": "2026-02-15",
+    "empleada": "Angelica",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 3.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=3.0)"
+  },
+  {
+    "id": "Lisa-2026-02-01",
+    "fecha": "2026-02-01",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 0.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=0.0)"
+  },
+  {
+    "id": "Lisa-2026-02-02",
+    "fecha": "2026-02-02",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 0.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=0.0)"
+  },
+  {
+    "id": "Lisa-2026-02-03",
+    "fecha": "2026-02-03",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-04",
+    "fecha": "2026-02-04",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-05",
+    "fecha": "2026-02-05",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-06",
+    "fecha": "2026-02-06",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-07",
+    "fecha": "2026-02-07",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-08",
+    "fecha": "2026-02-08",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-09",
+    "fecha": "2026-02-09",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 4.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=4.0)"
+  },
+  {
+    "id": "Lisa-2026-02-10",
+    "fecha": "2026-02-10",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-11",
+    "fecha": "2026-02-11",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-12",
+    "fecha": "2026-02-12",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.5)"
+  },
+  {
+    "id": "Lisa-2026-02-13",
+    "fecha": "2026-02-13",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.5,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.5)"
+  },
+  {
+    "id": "Lisa-2026-02-14",
+    "fecha": "2026-02-14",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  },
+  {
+    "id": "Lisa-2026-02-15",
+    "fecha": "2026-02-15",
+    "empleada": "Lisa",
+    "horaProg": "16:00",
+    "entrada": "",
+    "salida": "",
+    "horasManual": 5.0,
+    "videos": 0,
+    "playeraAplicar": false,
+    "tarde": false,
+    "notas": "Importado CSV (horas=5.0)"
+  }
+];
+
+
+const HOURLY = 40;
+const VIDEO_PAY = 20;
+const PLAYERA_DESC = 25;
+const TOL_MIN = 10;
+
+function $(id){ return document.getElementById(id); }
+function on(id, evt, fn){ const el = $(id); if(el) el.addEventListener(evt, fn); }
+function money(n){ return "$" + (Math.round((n||0)*100)/100).toFixed(2); }
+
+function loadJson(key, fallback){
+  try{
+    const v = localStorage.getItem(key);
+    if(!v) return fallback;
+    return JSON.parse(v);
+  }catch{ return fallback; }
+}
+function saveJson(key, value){
+  localStorage.setItem(key, JSON.stringify(value));
+  scheduleAutoUpload();
+}
+
+function loadApiUrl(){ return localStorage.getItem(LS_API_URL) || ""; }
+function saveApiUrl(v){ localStorage.setItem(LS_API_URL, v||""); autoDownloadOnStart(); }
+function loadApiKey(){ return localStorage.getItem(LS_API_KEY) || ""; }
+function saveApiKey(v){ localStorage.setItem(LS_API_KEY, v||""); autoDownloadOnStart(); }
+
+function loadRecords(){ return loadJson(LS_RECORDS, []); }
+function saveRecords(arr){ saveJson(LS_RECORDS, arr); }
+
+function loadBonos(){ return loadJson(LS_BONOS, { PA:{Lupita:0,Paulina:0,Angelica:0,Lisa:0}, EX:{Lupita:0,Paulina:0,Angelica:0,Lisa:0} }); }
+function saveBonos(obj){ saveJson(LS_BONOS, obj); }
+
+function loadPlayera(){ 
+  return loadJson(LS_PLAYERA, {
+    Lupita:{costoTotal:0, mitadEmpleado:0, saldoEmpleado:0},
+    Paulina:{costoTotal:0, mitadEmpleado:0, saldoEmpleado:0},
+    Angelica:{costoTotal:0, mitadEmpleado:0, saldoEmpleado:0},
+    Lisa:{costoTotal:0, mitadEmpleado:0, saldoEmpleado:0},
+  });
+}
+function savePlayera(obj){ saveJson(LS_PLAYERA, obj); }
+
+function parseHM(hm){
+  if(!hm) return null;
+  const [h,m] = hm.split(":").map(Number);
+  return h*60 + m;
+}
+
+function roundExtra(mins){
+  // 0-14 => 0
+  if(mins < 15) return 0;
+  // quarters
+  const q = Math.floor(mins / 15);
+  return q * 0.25;
+}
+
+function calcHoras(entrada, salida){
+  const e = parseHM(entrada);
+  const s = parseHM(salida);
+  if(e==null || s==null) return 0;
+  let diff = s - e;
+  if(diff < 0) diff += 24*60;
+  const horas = Math.floor(diff/60);
+  const mins = diff % 60;
+  return horas + roundExtra(mins);
+}
+
+function isTarde(horaProg, entrada){
+  const p = parseHM(horaProg);
+  const e = parseHM(entrada);
+  if(p==null || e==null) return false;
+  return (e - p) > TOL_MIN;
+}
+
+function quincenaDeFecha(fechaStr){
+  const d = new Date(fechaStr+"T00:00:00");
+  const day = d.getDate();
+  return day <= 15 ? 1 : 2;
+}
+
+function monthOf(fechaStr){
+  const d = new Date(fechaStr+"T00:00:00");
+  return d.getMonth()+1;
+}
+
+function inFilter(r){
+  const mes = Number($("mes").value);
+  const q = Number($("quincena").value);
+  return monthOf(r.fecha) === mes && quincenaDeFecha(r.fecha) === q;
+}
+
+function calcPagoRecord(r){
+  // Lunes pagado 4 horas (automático) si el día es lunes
+  const d = new Date(r.fecha+"T00:00:00");
+  const isMonday = d.getDay() === 1; // 0 domingo, 1 lunes
+  let horas = 0;
+  if(isMonday){
+    horas = 4;
+  }else{
+    horas = calcHoras(r.entrada, r.salida);
+  }
+
+  const pagoHoras = horas * HOURLY;
+  const pagoVideos = (Number(r.videos||0) * VIDEO_PAY);
+
+  let descPlayera = 0;
+  if(r.playeraAplicar){
+    descPlayera = PLAYERA_DESC;
+  }
+
+  return {
+    horas,
+    pagoHoras,
+    pagoVideos,
+    descPlayera,
+    total: pagoHoras + pagoVideos - descPlayera
+  };
+}
+
+function calcPreview(){
+  const fecha = $("fecha").value;
+  const horaProg = $("horaProg").value;
+  const entrada = $("entrada").value;
+  const salida = $("salida").value;
+  const videos = Number($("videos").value||0);
+  const playeraAplicar = $("playeraAplicar").checked;
+
+  if(!fecha){
+    $("calcPreview").textContent = "Selecciona una fecha para ver el cálculo.";
+    return;
+  }
+
+  const d = new Date(fecha+"T00:00:00");
+  const isMonday = d.getDay() === 1;
+  const tarde = isTarde(horaProg, entrada);
+
+  let horas = isMonday ? 4 : calcHoras(entrada, salida);
+  const pagoHoras = horas * HOURLY;
+  const pagoVideos = videos * VIDEO_PAY;
+  const desc = playeraAplicar ? PLAYERA_DESC : 0;
+  const total = pagoHoras + pagoVideos - desc;
+
+  const badge = isMonday ? "Lunes pagado (4 hrs)" : (tarde ? "Tarde" : "A tiempo");
+
+  $("calcPreview").innerHTML = `
+    <span class="badge ${isMonday?'ok':(tarde?'bad':'ok')}">${badge}</span>
+    &nbsp; Horas: <b>${horas.toFixed(2)}</b>
+    • Videos: <b>${videos}</b>
+    • Playera: <b>${desc?("-"+money(desc)):"No"}</b>
+    • Total día: <b>${money(total)}</b>
+  `;
+}
+
+function addRecord(){
+  const fecha = $("fecha").value;
+  const empleada = $("empleada").value;
+  const horaProg = $("horaProg").value;
+  const entrada = $("entrada").value;
+  const salida = $("salida").value;
+  const videos = Number($("videos").value||0);
+  const playeraAplicar = $("playeraAplicar").checked;
+  const notas = $("notas").value || "";
+
+  if(!fecha){
+    alert("Selecciona fecha.");
+    return;
+  }
+  // En lunes no se necesita entrada/salida, pero aceptamos si se llenan.
+  const d = new Date(fecha+"T00:00:00");
+  const isMonday = d.getDay() === 1;
+
+  if(!isMonday){
+    if(!entrada || !salida){
+      alert("Pon entrada y salida.");
+      return;
+    }
+  }
+
+  const record = {
+    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random(),
+    fecha, empleada,
+    horaProg,
+    entrada: entrada || "",
+    salida: salida || "",
+    videos,
+    playeraAplicar,
+    tarde: isTarde(horaProg, entrada),
+    notas
+  };
+
+  const all = loadRecords();
+  all.push(record);
+  saveRecords(all);
+
+  // Si aplicó playera, descontamos saldo
+  if(playeraAplicar){
+    const p = loadPlayera();
+    const emp = p[empleada] || {costoTotal:0, mitadEmpleado:0, saldoEmpleado:0};
+    if(emp.saldoEmpleado > 0){
+      emp.saldoEmpleado = Math.max(0, Number(emp.saldoEmpleado) - PLAYERA_DESC);
+      p[empleada] = emp;
+      savePlayera(p);
+    }
+  }
+
+  render();
+  clearForm();
+}
+
+function clearForm(){
+  $("entrada").value = "";
+  $("salida").value = "";
+  $("videos").value = 0;
+  $("playeraAplicar").checked = false;
+  $("notas").value = "";
+  calcPreview();
+}
+
+function removeRecord(id){
+  if(!confirm("¿Eliminar este registro?")) return;
+  const all = loadRecords().filter(r=>r.id!==id);
+  saveRecords(all);
+  render();
+}
+
+function tardanzasPorQuincena(empleada, mes, q){
+  const all = loadRecords().filter(r=> r.empleada===empleada);
+  return all.filter(r=>{
+    return monthOf(r.fecha)===mes && quincenaDeFecha(r.fecha)===q && r.tarde;
+  }).length;
+}
+
+function calcNomina(){
+  const mes = Number($("mes").value);
+  const q = Number($("quincena").value);
+  const bonos = loadBonos();
+
+  const filtered = loadRecords().filter(r=> monthOf(r.fecha)===mes && quincenaDeFecha(r.fecha)===q);
+
+  const per = {};
+  EMPLEADAS.forEach(n=>{
+    per[n] = { horas:0, pagoHoras:0, pagoVideos:0, descPlayera:0, total:0, tardes:0, bonoPA:0, bonoEX:0, bono:0, totalFinal:0 };
+  });
+
+  filtered.forEach(r=>{
+    const c = calcPagoRecord(r);
+    per[r.empleada].horas += c.horas;
+    per[r.empleada].pagoHoras += c.pagoHoras;
+    per[r.empleada].pagoVideos += c.pagoVideos;
+    per[r.empleada].descPlayera += c.descPlayera;
+    per[r.empleada].total += c.total;
+    if(r.tarde) per[r.empleada].tardes += 1;
+  });
+
+  EMPLEADAS.forEach(n=>{
+    const tardes = per[n].tardes;
+    const bonoPA = Number((bonos.PA||{})[n]||0);
+    const bonoEX = Number((bonos.EX||{})[n]||0);
+
+    const bonoPA_aplica = tardes <= 3;
+    const bonoPA_final = bonoPA_aplica ? bonoPA : 0;
+
+    const bonoEX_final = bonoEX;
+
+    per[n].bonoPA = bonoPA_final;
+    per[n].bonoEX = bonoEX_final;
+    per[n].bono = bonoPA_final + bonoEX_final;
+    per[n].totalFinal = per[n].total + per[n].bono;
+  });
+
+  return { per, filtered };
+}
+
+function render(){
+  const { per, filtered } = calcNomina();
+  const tbody = $("tbody");
+  tbody.innerHTML = "";
+
+  filtered
+    .sort((a,b)=> (a.fecha.localeCompare(b.fecha)) || (a.empleada.localeCompare(b.empleada)))
+    .forEach(r=>{
+      const c = calcPagoRecord(r);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.fecha}</td>
+        <td><b>${r.empleada}</b></td>
+        <td>${r.horaProg || ""}</td>
+        <td>${r.entrada || ""}</td>
+        <td>${r.salida || ""}</td>
+        <td class="num">${c.horas.toFixed(2)}</td>
+        <td>${r.tarde ? '<span class="badge bad">Sí</span>' : '<span class="badge ok">No</span>'}</td>
+        <td class="num">${Number(r.videos||0)}</td>
+        <td>${r.playeraAplicar ? '<span class="badge warn">-$25</span>' : '<span class="badge">—</span>'}</td>
+        <td class="num"><b>${money(c.total)}</b></td>
+        <td><button class="btn btnDanger" data-del="${r.id}" style="padding:8px 10px;">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  // delete buttons
+  [...document.querySelectorAll("[data-del]")].forEach(btn=>{
+    btn.addEventListener("click", ()=> removeRecord(btn.getAttribute("data-del")));
+  });
+
+  // summary
+  const mes = Number($("mes").value);
+  const q = Number($("quincena").value);
+  let totalGlobal = 0;
+
+  const lines = EMPLEADAS.map(n=>{
+    const p = per[n];
+    totalGlobal += p.totalFinal;
+    const badge = p.tardes > 3 ? '<span class="badge bad">Sin bono</span>' : '<span class="badge ok">Bono OK</span>';
+    return `<div style="margin:6px 0;">
+      <b>${n}</b> — Horas: ${p.horas.toFixed(2)} • Pago: ${money(p.total)} • Tardes: ${p.tardes} ${badge}
+      • Bono P/A: <b>${money(p.bonoPA)}</b> • Extra: <b>${money(p.bonoEX)}</b> • Total: <b>${money(p.totalFinal)}</b>
+    </div>`;
+  }).join("");
+
+  $("summary").innerHTML = `
+    <b>Resumen quincena</b><br/>
+    ${lines}
+    <div style="margin-top:10px;"><b>Total global:</b> ${money(totalGlobal)}</div>
+  `;
+
+  $("qInfo").textContent = `Mes ${mes} • Quincena ${q} • Registros: ${filtered.length}`;
+
+  // Playera status
+  renderPlayeraStatus();
+}
+
+function renderPlayeraStatus(){
+  const p = loadPlayera();
+  const emp = $("playeraEmpleada").value;
+  const d = p[emp] || {costoTotal:0, mitadEmpleado:0, saldoEmpleado:0};
+  $("playeraStatus").innerHTML = `
+    <b>${emp}</b><br/>
+    Costo total: <b>${money(d.costoTotal)}</b><br/>
+    Mitad empleado: <b>${money(d.mitadEmpleado)}</b><br/>
+    Saldo empleado: <b>${money(d.saldoEmpleado)}</b>
+  `;
+}
+
+function saveBonosFromUI(){
+  const obj = {
+    PA:{
+      Lupita: Number($("bonoPA_Lupita").value||0),
+      Paulina: Number($("bonoPA_Paulina").value||0),
+      Angelica: Number($("bonoPA_Angelica").value||0),
+      Lisa: Number($("bonoPA_Lisa").value||0),
+    },
+    EX:{
+      Lupita: Number($("bonoEX_Lupita").value||0),
+      Paulina: Number($("bonoEX_Paulina").value||0),
+      Angelica: Number($("bonoEX_Angelica").value||0),
+      Lisa: Number($("bonoEX_Lisa").value||0),
+    }
+  };
+  saveBonos(obj);
+  render();
+}
+
+function setPlayeraPlan(){
+  const emp = $("playeraEmpleada").value;
+  const costoTotal = Number($("playeraCostoTotal").value||0);
+  if(!costoTotal){
+    alert("Pon el costo total.");
+    return;
+  }
+  const mitad = Math.round((costoTotal/2)*100)/100;
+
+  const p = loadPlayera();
+  p[emp] = { costoTotal, mitadEmpleado: mitad, saldoEmpleado: mitad };
+  savePlayera(p);
+  renderPlayeraStatus();
+}
+
+function exportCSV(){
+  const { filtered } = calcNomina();
+  const headers = ["fecha","empleada","horaProg","entrada","salida","horas","tarde","videos","playera","pago","notas"];
+  const rows = filtered.map(r=>{
+    const c = calcPagoRecord(r);
+    return [
+      r.fecha,
+      r.empleada,
+      r.horaProg||"",
+      r.entrada||"",
+      r.salida||"",
+      c.horas.toFixed(2),
+      r.tarde?"SI":"NO",
+      Number(r.videos||0),
+      r.playeraAplicar?"SI":"NO",
+      c.total.toFixed(2),
+      (r.notas||"").replaceAll('"','""')
+    ];
+  });
+  const csv = [headers.join(","), ...rows.map(r=> r.map(v=> `"${String(v)}"`).join(","))].join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "nomina-la-bonita.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function pdfPorEmpleada(){
+  const { jsPDF } = window.jspdf;
+  const { per, filtered } = calcNomina();
+  const mes = Number($("mes").value);
+  const q = Number($("quincena").value);
+  const bonos = loadBonos();
+  const playera = loadPlayera();
+
+  EMPLEADAS.forEach(name=>{
+    const doc = new jsPDF({ unit:"pt", format:"a4" });
+    const p = per[name];
+    const tardes = p.tardes;
+    const bonoPA = Number(((bonos.PA||{})[name])||0);
+    const bonoEX = Number(((bonos.EX||{})[name])||0);
+    const bonoPA_aplicado = (tardes<=3) ? bonoPA : 0;
+    const bonoAplicado = bonoPA_aplicado + bonoEX;
+    const playeraSaldo = (playera[name]||{}).saldoEmpleado ?? 0;
+
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(16);
+    doc.text("Recibo de Nómina - La Bonita", 40, 60);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica","normal");
+    doc.text(`Empleada: ${name}`, 40, 90);
+    doc.text(`Mes: ${mes}  •  Quincena: ${q}`, 40, 108);
+    doc.text(`Tardanzas: ${tardes}  •  Bono P/A: ${money(bonoPA_aplicado)}  •  Extra: ${money(bonoEX)}  •  Total bonos: ${money(bonoAplicado)}`, 40, 126);
+    doc.text(`Saldo playera (empleado): ${money(playeraSaldo)}`, 40, 144);
+
+    let y = 175;
+    doc.setFont("helvetica","bold");
+    doc.text("Resumen", 40, y);
+    y += 18;
+    doc.setFont("helvetica","normal");
+    doc.text(`Horas: ${p.horas.toFixed(2)}`, 40, y); y+=16;
+    doc.text(`Pago horas: ${money(p.pagoHoras)}`, 40, y); y+=16;
+    doc.text(`Pago videos: ${money(p.pagoVideos)}`, 40, y); y+=16;
+    doc.text(`Descuento playera: ${money(p.descPlayera)}`, 40, y); y+=16;
+    doc.text(`Bono: ${money(p.bono)}`, 40, y); y+=16;
+
+    doc.setFont("helvetica","bold");
+    doc.text(`TOTAL A PAGAR: ${money(p.totalFinal)}`, 40, y+10);
+
+    // tabla simple
+    y += 45;
+    doc.setFont("helvetica","bold");
+    doc.text("Días", 40, y);
+    y += 14;
+
+    const days = filtered.filter(r=> r.empleada===name).sort((a,b)=> a.fecha.localeCompare(b.fecha));
+    doc.setFont("helvetica","normal");
+    days.forEach(r=>{
+      if(y > 760){
+        doc.addPage();
+        y = 60;
+      }
+      const c = calcPagoRecord(r);
+      const line = `${r.fecha}  ${r.horaProg||""}  ${r.entrada||""}-${r.salida||""}  Horas:${c.horas.toFixed(2)}  ${r.tarde?"TARDE":""}  Total:${money(c.total)}`;
+      doc.text(line, 40, y);
+      y += 14;
+    });
+
+    doc.save(`recibo-${name}-mes${mes}-q${q}.pdf`);
+  });
+}
+
+function resetAll(){
+  if(!confirm("Esto borra TODO (registros, bonos y playera). ¿Seguro?")) return;
+  localStorage.removeItem(LS_RECORDS);
+  localStorage.removeItem(LS_BONOS);
+  localStorage.removeItem(LS_PLAYERA);
+  render();
+  scheduleAutoUpload();
+}
+
+let syncTimer = null;
+let syncBusy = false;
+
+function scheduleAutoUpload(){
+  const url = loadApiUrl().trim();
+  if(!url) return;
+  if(syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(()=>{ autoUploadNow(); }, 700);
+}
+
+async function autoUploadNow(){
+  if(syncBusy) return;
+  const url = loadApiUrl().trim();
+  const apiKey = loadApiKey().trim();
+  if(!url) return;
+  syncBusy = true;
+  try{
+    if($("syncStatus")) $("syncStatus").textContent = "Guardando en Sheets…";
+    const payload = {
+      action: "upload",
+      apiKey,
+      records: loadRecords(),
+      bonos: loadBonos(),
+      playeraPlan: loadPlayera()
+    };
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || "Error");
+    if($("syncStatus")) $("syncStatus").textContent = "Listo ✅ Guardado automático.";
+  }catch(err){
+    if($("syncStatus")) $("syncStatus").textContent = "Error ❌ No se pudo guardar.";
+    console.error(err);
+  }finally{
+    syncBusy = false;
+  }
+}
+
+async function autoDownloadOnStart(){
+  const url = loadApiUrl().trim();
+  const apiKey = loadApiKey().trim();
+  if(!url) return;
+
+  try{
+    if($("syncStatus")) $("syncStatus").textContent = "Cargando desde Sheets…";
+    const payload = { action:"download", apiKey };
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(!data.ok) throw new Error(data.error || "Error");
+
+    if(Array.isArray(data.records)){
+      localStorage.setItem(LS_RECORDS, JSON.stringify(data.records));
+    }
+    if(data.bonos && typeof data.bonos === "object"){
+      localStorage.setItem(LS_BONOS, JSON.stringify(data.bonos));
+    }
+    // playeraPlan comes as playeraPlan
+    if(data.playeraPlan && typeof data.playeraPlan === "object"){
+      localStorage.setItem(LS_PLAYERA, JSON.stringify(data.playeraPlan));
+    }
+
+    if($("syncStatus")) $("syncStatus").textContent = "Listo ✅ Conectado.";
+    render();
+  }catch(err){
+    if($("syncStatus")) $("syncStatus").textContent = "Error ❌ No se pudo conectar.";
+    console.error(err);
+  }
+}
+
+function init(){
+  // defaults
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,"0");
+  const dd = String(today.getDate()).padStart(2,"0");
+  $("fecha").value = `${yyyy}-${mm}-${dd}`;
+
+  // filtro automático
+  $("mes").value = String(today.getMonth()+1);
+  $("quincena").value = (today.getDate()<=15) ? "1" : "2";
+
+  // Lupita default hour
+  $("empleada").addEventListener("change", ()=>{
+    if($("empleada").value === "Lupita") $("horaProg").value = "14:00";
+    else $("horaProg").value = "16:00";
+    calcPreview();
+  });
+
+  // api fields
+  $("apiUrl").value = loadApiUrl();
+  $("apiKey").value = loadApiKey();
+  $("apiUrl").addEventListener("change", ()=> saveApiUrl($("apiUrl").value));
+  $("apiKey").addEventListener("change", ()=> saveApiKey($("apiKey").value));
+
+  // actions
+  on("btnAdd","click", addRecord);
+  on("btnClearForm","click", clearForm);
+  on("btnSaveBonos","click", saveBonosFromUI);
+  on("btnSetPlayera","click", setPlayeraPlan);
+  on("btnExportCSV","click", exportCSV);
+  on("btnPdf","click", pdfPorEmpleada);
+  on("btnResetAll","click", resetAll);
+  on("mes","change", render);
+  on("quincena","change", render);
+
+  // live preview
+  ["fecha","horaProg","entrada","salida","videos","playeraAplicar"].forEach(id=>{
+    on(id, "change", calcPreview);
+    on(id, "keyup", calcPreview);
+  });
+
+  // bonos load
+  const b = loadBonos();
+  const PA = b.PA || {};
+  const EX = b.EX || {};
+
+  // Prefill PA bonos from tu Excel (puedes cambiarlos)
+  const PA_DEFAULT = {Lupita:50, Paulina:50, Angelica:50, Lisa:50};
+  $("bonoPA_Lupita").value = (PA.Lupita ?? PA_DEFAULT.Lupita) || 0;
+  $("bonoPA_Paulina").value = (PA.Paulina ?? PA_DEFAULT.Paulina) || 0;
+  $("bonoPA_Angelica").value = (PA.Angelica ?? PA_DEFAULT.Angelica) || 0;
+  $("bonoPA_Lisa").value = (PA.Lisa ?? PA_DEFAULT.Lisa) || 0;
+
+  $("bonoEX_Lupita").value = EX.Lupita || 0;
+  $("bonoEX_Paulina").value = EX.Paulina || 0;
+  $("bonoEX_Angelica").value = EX.Angelica || 0;
+  $("bonoEX_Lisa").value = EX.Lisa || 0;
+
+  render();
+  calcPreview();
+  renderPlayeraStatus();
+  autoDownloadOnStart();
+}
+
+init();
+</script>
+</body>
+</html>
