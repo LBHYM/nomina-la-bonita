@@ -1,0 +1,390 @@
+/* La Bonita — Nómina (GitHub Pages) */
+:root{
+  --brown:#5A3B2E;
+  --caramel:#C48A5A;
+  --mint:#4DAA96;
+  --lime:#A9C93B;
+  --blush:#D77B86;
+  --sand:#F6F0E7;
+  --bg:#fbfaf8;
+  --card:#ffffff;
+  --text:#231b16;
+  --muted:#6b5b52;
+  --border:rgba(90,59,46,.14);
+  --shadow: 0 14px 35px rgba(0,0,0,.08);
+  --radius: 18px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Nunito, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1200px 600px at 20% 0%, rgba(77,170,150,.12), transparent 55%),
+              radial-gradient(900px 500px at 85% 10%, rgba(215,123,134,.12), transparent 55%),
+              radial-gradient(900px 500px at 60% 90%, rgba(196,138,90,.10), transparent 55%),
+              var(--bg);
+  color:var(--text);
+}
+
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+  background: rgba(251,250,248,.78);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+  display:flex;
+  gap: 14px;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.brand{
+  display:flex;
+  gap: 12px;
+  align-items:center;
+  min-width: 260px;
+}
+.logo{
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+.brandName{
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 18px;
+  color: var(--brown);
+}
+.brandSub{
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.topActions{
+  display:flex;
+  gap:10px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
+
+.wrap{
+  max-width: 1200px;
+  margin: 18px auto 40px;
+  padding: 0 16px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 14px;
+}
+
+@media (max-width: 980px){
+  .grid{grid-template-columns:1fr}
+  .topbar{position:relative}
+}
+
+.card{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+
+.cardHead{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 10px;
+}
+h2{
+  margin:0;
+  font-size: 18px;
+  color: var(--brown);
+  letter-spacing: .2px;
+}
+.pill{
+  font-size: 12px;
+  color: var(--brown);
+  border: 1px solid var(--border);
+  background: rgba(246,240,231,.7);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.form{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
+
+.row{
+  display:flex;
+  gap: 10px;
+  align-items:flex-end;
+}
+@media (max-width: 520px){
+  .row{flex-direction:column; align-items:stretch}
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap: 6px;
+  width: 50%;
+}
+label{
+  font-size: 12px;
+  color: var(--muted);
+}
+input, select{
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+}
+input:focus, select:focus{
+  border-color: rgba(77,170,150,.6);
+  box-shadow: 0 0 0 4px rgba(77,170,150,.15);
+}
+
+.check{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  border: 1px solid var(--border);
+  background: rgba(246,240,231,.55);
+  padding: 10px 12px;
+  border-radius: 14px;
+  width: 50%;
+}
+.check input{height:auto}
+.check span{font-size: 14px; color: var(--brown); font-weight: 700}
+
+.actions{
+  align-items:center;
+  justify-content:space-between;
+}
+.preview{
+  font-size: 12px;
+  color: var(--muted);
+  text-align:right;
+}
+.mini{flex:1}
+
+.btn{
+  border: 0;
+  border-radius: 14px;
+  height: 42px;
+  padding: 0 14px;
+  font-weight: 800;
+  cursor:pointer;
+  transition: transform .08s ease, box-shadow .08s ease, opacity .08s ease;
+}
+.btn:active{transform: translateY(1px)}
+.btnPrimary{
+  background: linear-gradient(135deg, var(--mint), var(--caramel));
+  color: white;
+  box-shadow: 0 10px 20px rgba(77,170,150,.22);
+}
+.btnGhost{
+  background: rgba(246,240,231,.7);
+  border: 1px solid var(--border);
+  color: var(--brown);
+}
+.btnDanger{
+  background: rgba(215,123,134,.18);
+  border: 1px solid rgba(215,123,134,.35);
+  color: #7a2f3a;
+}
+
+.box{
+  width: 50%;
+  border: 1px solid var(--border);
+  background: rgba(246,240,231,.55);
+  padding: 12px;
+  border-radius: 16px;
+}
+.boxTitle{
+  font-weight: 800;
+  color: var(--brown);
+  margin-bottom: 6px;
+}
+.boxText{
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.small{font-size: 12px; opacity: .9}
+
+.range{
+  font-size: 13px;
+  color: var(--brown);
+  font-weight: 800;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px dashed rgba(90,59,46,.22);
+  background: rgba(246,240,231,.5);
+}
+
+.tableWrap{
+  width:100%;
+  overflow:auto;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.table{
+  width:100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+.table th, .table td{
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(90,59,46,.10);
+  font-size: 13px;
+}
+.table th{
+  position: sticky;
+  top: 0;
+  background: rgba(246,240,231,.9);
+  text-align:left;
+  color: var(--brown);
+  font-weight: 900;
+}
+.table td{color:#2c231e}
+.table tr:hover td{background: rgba(77,170,150,.06)}
+.num{text-align:right; font-variant-numeric: tabular-nums;}
+
+.iconBtn{
+  border: 1px solid var(--border);
+  background: rgba(246,240,231,.7);
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 12px;
+  cursor:pointer;
+  font-weight: 900;
+  color: var(--brown);
+}
+.iconBtnDanger{
+  border-color: rgba(215,123,134,.35);
+  background: rgba(215,123,134,.15);
+  color: #7a2f3a;
+}
+
+.totals{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+@media (max-width: 980px){
+  .totals{grid-template-columns:1fr}
+}
+.totalCard{
+  border: 1px solid var(--border);
+  background: rgba(246,240,231,.55);
+  padding: 12px;
+  border-radius: 16px;
+}
+.totalCard .k{
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+.totalCard .v{
+  color: var(--brown);
+  font-size: 22px;
+  font-weight: 900;
+  margin-top: 6px;
+}
+
+.footer{
+  display:flex;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 14px 4px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+@media (max-width: 720px){
+  .footer{flex-direction:column}
+}
+
+.bonosUI{
+  display:flex;
+  flex-direction:column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.bonoRow{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  justify-content:space-between;
+}
+.bonoRow .name{
+  font-weight: 900;
+  color: var(--brown);
+}
+.toggle{
+  display:flex;
+  gap: 8px;
+  align-items:center;
+}
+.toggle input{transform: scale(1.15)}
+
+
+.btnWarn{
+  background: linear-gradient(135deg, var(--caramel), var(--blush)) !important;
+  box-shadow: 0 10px 20px rgba(215,123,134,.20) !important;
+}
+
+
+.note{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(77,170,150,.10);
+  border: 1px solid rgba(77,170,150,.22);
+  color: var(--brown);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+
+.hint{
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(90,59,46,.72);
+}
+
+input[type=number]{ width: 100%; }
+
+
+/* PDF button row */
+#btnReciboPDF{
+  width: 100%;
+}
+
+
+/* Reglas: mismo tamaño y compacto */
+.rules .boxText{
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.rules .boxText div{
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0 0 4px 0;
+}
